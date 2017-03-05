@@ -2,6 +2,11 @@
 name = "vertx"
 version = "0.1.0"
 authors = ["Pierre Zemb <contact@pierrezemb.fr>"]
+repository = "https://github.com/PierreZ/vertx-rs.git"
+homepage = "https://github.com/PierreZ/vertx-rs.git"
+license = "MIT"
+readme = "README.md"
+description = "A Vert.x Event-bus library for Rust built with Tokio"
 
 [dependencies]
 futures = "0.1"
@@ -9,3 +14,8 @@ tokio-core = "0.1"
 tokio-service = "0.1"
 tokio-proto = "0.1"
 rustc-serialize = "0.3"
+clippy = {version = "*", optional = true}
+
+[features]
+default = []
+dev = ["clippy"]
