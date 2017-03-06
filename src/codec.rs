@@ -7,8 +7,11 @@
         unstable_features,
         unused_import_braces, unused_qualifications)]
 
+use byteorder::{BigEndian, ReadBytesExt};
 use rustc_serialize::json;
 use std::io;
+use std::io::Cursor;
+use std::str;
 use tokio_core::io::{Codec, EasyBuf};
 
 #[derive(Clone, Copy, Debug)]
@@ -19,10 +22,28 @@ impl Codec for LineCodec {
     type In = VertxMessage;
     type Out = VertxMessage;
 
-    #[allow(unused_variables)]
-    // TODO
     fn decode(&mut self, buf: &mut EasyBuf) -> io::Result<Option<Self::In>> {
-        Ok(None)
+        let mut copy = buf.clone();
+        copy.split_off(4);
+        // Copy now contains the 4 bytes with the size of the JSON. We don't need the head
+
+        let mut cursor = Cursor::new(copy);
+        let num = cursor.read_u32::<BigEndian>().unwrap();
+        if buf.len() >= num as usize {
+            // Buffer is holding everything we need, flushing it
+            buf.drain_to(4); // Removing length
+            let json = buf.drain_to(num as usize); // removing json
+            // Turn this data into a UTF string and return it in a Frame.
+            match str::from_utf8(json.as_slice()) {
+                Ok(s) => {
+                    let decoded: VertxMessage = json::decode(s).unwrap();
+                    Ok(Some(decoded))
+                }
+                Err(_) => Err(io::Error::new(io::ErrorKind::Other, "invalid UTF-8")),
+            }
+        } else {
+            Ok(None)
+        }
     }
 
     /// Encode is transforming a VertxMessage into the right protocol:
