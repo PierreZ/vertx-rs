@@ -4,16 +4,14 @@
 #![cfg_attr(feature = "dev", feature(plugin))]
 #![cfg_attr(feature = "dev", plugin(clippy))]
 
-pub mod codec;
-
-extern crate rustc_serialize;
-extern crate futures;
-extern crate tokio_core;
+extern crate tokio_io;
 extern crate tokio_proto;
 extern crate tokio_service;
+extern crate futures;
 
-extern crate byteorder;
+extern crate rustc_serialize;
 
+mod client;
 
 #[test]
 fn it_works() {}
